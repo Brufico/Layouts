@@ -8,15 +8,17 @@ fontsize: 12pt
 documentclass: article
 classoption: a4paper
 geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=2cm,footskip=1cm" # try effect
+footer: \thetitle \ \textemdash \ \thepage 
 output: 
-  pdf_document: 
-    keep_tex: true
+  pdf_document:
+    # keep_tex: true
     number_sections: yes
     toc: yes
-    template: "D:/Documents/templates/latex/test_latex_temp"
-  html_document: 
-    number_sections: yes
-    toc: yes
+    template: latex_temp2.latex
+    fig_caption: yes
+  # html_document:
+  #   number_sections: yes
+  #   toc: yes
 ---
 
 ```{r, include = FALSE}
@@ -68,7 +70,7 @@ w.14 <- 1 / 4 * doclinewidth * 0.99
 # two3outwidth <- if (pdfoutput) {"0.64\\textwidth"} else {NULL}
 # fulloutwidth <- if (pdfoutput) {"\\textwidth"} else {NULL}
 
-# configs prédéfinies knitr::opts_template$set()
+# configs pr?d?finies knitr::opts_template$set()
 
 .codeR <- paste0( "knitr::opts_template$set(",
                   ".f14  =  list(fig.width = ", w.14, ", fig.asp = ", a.12, "), ",
@@ -122,7 +124,7 @@ You can also embed plots, for example:
 Sur 2 colonnes:(4 plots)
 
 
-```{r geom-basic, cache = TRUE, fig.width=w.12, fig.asp=a.34 } 
+```{r basic, cache = TRUE, fig.width=w.12, fig.asp=a.34 } 
 df <- data.frame(
   x = c(3, 1, 5), 
   y = c(2, 4, 6), 
@@ -137,9 +139,9 @@ p + geom_bar(stat = "identity") + ggtitle("bar")
 p + geom_tile() + ggtitle("raster")
 ```
 
-* Idem 3 colonnes, avec modèle prédéfini
+* Idem 3 colonnes, avec modÃ¨le prÃ©dÃ©fini
 
-```{r geom-basic2, cache = TRUE, opts.label = ".f13"}
+```{r basic2, cache = TRUE, opts.label = ".f13"}
 p <- ggplot(df, aes(x, y, label = label)) + 
   labs(x = NULL, y = NULL) + # Hide axis label
   theme(plot.title = element_text(size = 12)) # Shrink plot title
@@ -152,7 +154,7 @@ p + geom_tile() + ggtitle("raster")
 
 4 colonnes
 
-```{r basic 2, cache = TRUE, w=w.14, fig.asp=a.13}
+```{r basicx2, cache = TRUE, w=w.14, fig.asp=a.13}
 p + geom_line() + ggtitle("line")
 p + geom_area() + ggtitle("area")
 p + geom_path() + ggtitle("path")
@@ -164,19 +166,22 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 Again: 
 
-
-```{r pressure, echo=TRUE, w=w.13, fig.height = w.11 * 1/3}
+```{r pressure, echo=TRUE, w=w.13, a=a.12}
 x1 = 1:6
 y1 = sqrt(x1)
 y2 = 1 - (x1 - 3) ^ 2 / 9
 
 curmar <- par("mar")
-par(mar = c(4, 4, 1, 1) + 0.1)
+par(mar = c(4, 4, 0.1, 0.1) + 0.1)
+curmgp = par("mgp")
+par(mgp = c(1,.5,0))
 
-plot(pressure)
-plot(x1,y1)
-plot(x1,y2)
+plot(pressure, cex=0.5, cex.lab = .5, cex.axis = 0.5) 
+plot(x1,y1, cex=0.5, cex.lab = .5, cex.axis = 0.5)
+plot(x1,y2, cex=0.5, cex.lab = .5, cex.axis = 0.5)
+
 par(mar = curmar)
+par(mgp = curmgp)
 
 ```
 
