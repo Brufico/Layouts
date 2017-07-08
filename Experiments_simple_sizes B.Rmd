@@ -1,0 +1,200 @@
+---
+title: "Experiment with figure sizes"
+author: "BFC"
+date: "5 juillet 2017"
+# header-includes:  
+#     - \usepackage{float}
+fontsize: 12pt
+documentclass: article
+classoption: a4paper
+geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=2cm,footskip=1cm" # try effect
+output: 
+  pdf_document: 
+    keep_tex: true
+    number_sections: yes
+    toc: yes
+    template: "D:/Documents/templates/latex/test_latex_temp"
+  html_document: 
+    number_sections: yes
+    toc: yes
+---
+
+```{r, include = FALSE}
+# # Important parameters to send to common.R
+# doclinewidth <- (21 - 1.5 - 1.5) * 0.3937 # == line width in inches
+# source("common2.R")
+# columns(1, 3 / 4)
+
+library(knitr)
+```
+
+
+```{r setup, include=FALSE}
+
+# ** Some code *******
+
+#  From Hadley's ggplot2 book
+is_latex <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "latex")
+}
+
+pdfoutput <- is_latex()
+
+# personal code, 
+
+# figures parameters
+#   aspect ratio
+a.13 <- 1 / 3
+a.12 <- 0.5
+a.34 <- 0.75
+a.11 <- 1
+a.43 <- 1.33
+a.21 <- 2
+
+#   width
+# == doc line width in inches * security coeff 0.96
+
+doclinewidth <- (21 - 1.5 - 1.5) * 0.3937 * 0.98 
+w.11 <-  doclinewidth
+w.34 <- 3 / 4 * doclinewidth
+w.23 <- 2 / 3 * doclinewidth
+w.12  <-  1 / 2 * doclinewidth
+w.13 <- 1 / 3 * doclinewidth
+w.14 <- 1 / 4 * doclinewidth * 0.99
+
+# #   output width (only pdf)
+# one3outwidth <- if (pdfoutput) {"0.32\\textwidth"} else {NULL}
+# halfoutwidth <- if (pdfoutput) {"0.48\\textwidth"} else {NULL}
+# two3outwidth <- if (pdfoutput) {"0.64\\textwidth"} else {NULL}
+# fulloutwidth <- if (pdfoutput) {"\\textwidth"} else {NULL}
+
+# configs prédéfinies knitr::opts_template$set()
+
+.codeR <- paste0( "knitr::opts_template$set(",
+                  ".f14  =  list(fig.width = ", w.14, ", fig.asp = ", a.12, "), ",
+                  ".f13  =  list(fig.width = ", w.13, ", fig.asp = ", a.34, "), ",
+                  ".f12  =  list(fig.width = ", w.12, ", fig.asp = ", a.34, "), ",
+                  ".fnorm  =  list(fig.width = ", w.23, ", fig.asp = ", a.34, "), ",
+                  ".full  =  list(fig.width = ", w.11, ", fig.asp = ", a.34, ")",
+                  ")"
+)
+
+
+eval(parse(text = .codeR))  
+              
+              
+# verif
+# knitr::opts_template$get()
+# knitr::opts_template$get(".f14")
+
+# Set aliases
+knitr::set_alias(w = "fig.width", a = "fig.asp")
+
+# default options
+knitr::opts_chunk$set(echo = TRUE, fig.width = w.23, fig.asp = a.34 , fig.align = "center", fig.show = "hold")
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+```{r lib, include=FALSE}
+library(ggplot2)
+```
+
+
+
+```{r cars}
+summary(cars)
+
+x <- 1:3 # dummy
+
+knitr::kable(summary(cars)) # changed
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+Sur 2 colonnes:(4 plots)
+
+
+```{r geom-basic, cache = TRUE, fig.width=w.12, fig.asp=a.34 } 
+df <- data.frame(
+  x = c(3, 1, 5), 
+  y = c(2, 4, 6), 
+  label = c("a","b","c")
+)
+p <- ggplot(df, aes(x, y, label = label)) + 
+  labs(x = NULL, y = NULL) + # Hide axis label
+  theme(plot.title = element_text(size = 12)) # Shrink plot title
+p + geom_point() + ggtitle("point")
+p + geom_text() + ggtitle("text")
+p + geom_bar(stat = "identity") + ggtitle("bar")
+p + geom_tile() + ggtitle("raster")
+```
+
+* Idem 3 colonnes, avec modèle prédéfini
+
+```{r geom-basic2, cache = TRUE, opts.label = ".f13"}
+p <- ggplot(df, aes(x, y, label = label)) + 
+  labs(x = NULL, y = NULL) + # Hide axis label
+  theme(plot.title = element_text(size = 12)) # Shrink plot title
+p + geom_point() + ggtitle("point")
+p + geom_text() + ggtitle("text")
+p + geom_bar(stat = "identity") + ggtitle("bar")
+p + geom_tile() + ggtitle("raster")
+```
+
+
+4 colonnes
+
+```{r basic 2, cache = TRUE, w=w.14, fig.asp=a.13}
+p + geom_line() + ggtitle("line")
+p + geom_area() + ggtitle("area")
+p + geom_path() + ggtitle("path")
+p + geom_polygon() + ggtitle("polygon")
+```
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+Again: 
+
+
+```{r pressure, echo=TRUE, w=w.13, fig.height = w.11 * 1/3}
+x1 = 1:6
+y1 = sqrt(x1)
+y2 = 1 - (x1 - 3) ^ 2 / 9
+
+curmar <- par("mar")
+par(mar = c(4, 4, 1, 1) + 0.1)
+
+plot(pressure)
+plot(x1,y1)
+plot(x1,y2)
+par(mar = curmar)
+
+```
+
+**That's it!**
+
+Some more tries
+
+```{r somemore}
+knitr::opts_chunk$get("label")
+
+knitr::opts_knit$get("width") # number of characters in R
+knitr::opts_chunk$get("max_width") # NULL
+knitr::opts_chunk$get("out.width") # 65%
+knitr::opts_chunk$get("out.extra") # "style='max-width: 3.9in'"
+knitr::opts_chunk$get("fig.width") 
+
+
+```
+
+
+
