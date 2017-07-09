@@ -1,0 +1,127 @@
+---
+title: "Experiments cross-referencing"
+author: "Thell 'Bo' Fowler (Thell) modifs by Bruno Fischer Colonimos"
+date: "9 juillet 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup0, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r setup, echo=FALSE, results='hide'}
+chunkref <- local({
+  function(chunklabel) {
+    sprintf('[%s](#%s)', chunklabel, chunklabel )
+  }  
+})
+
+secref <- local({
+  function(seclabel) {
+    sprintf('[%s](#%s)', seclabel, seclabel )
+  }  
+})
+
+pgref <- local({
+  function(n)
+  sprintf('[Page-%i](#Page-%i)', n, n)
+})
+
+sec <- local({
+  function(seclabel) {
+    sprintf('# <a name="%s"/> %s', seclabel, seclabel )
+  }  
+})
+
+pgcount <- local({
+  pg <- 0
+  function(inc=T) {
+    if( inc ) { pg <<- pg + 1 }
+    return( pg )
+  }
+})
+
+pganchor <- local({
+  function(doLabel=T) {
+    if( doLabel) {
+      sprintf('\n-----\nPage-%i\n<a name="Page-%i"/>\n', pgcount(inc=F), pgcount() )
+    } else {
+      sprintf('\n<a name="Page-%i"/>\n', pgcount() )
+    }
+  }
+})
+
+knitr::knit_hooks$set( anchor = function(before, options, envir) {
+  if ( before ) {
+    sprintf('<a name="%s"/>\n', options$label )
+  }
+})
+
+knitr::knit_hooks$set( echo.label = function(before, options, envir) {
+  if ( before ) {
+    sprintf('> %s', options$label )
+  }
+})
+
+knitr::knit_hooks$set( pgbreak = function(before, options, envir) {
+  if ( !before ) {
+    pganchor();
+  }
+})
+
+````
+
+found at :https://gist.github.com/Thell/5827832#file-exmple-rmd
+
+`r pganchor(F)`
+`r sec("Introduction")`
+
+All things are possible!  Later in this document the `r secref("knitr-setup")` listing describes some possible ways things can be accomplished.
+
+For now, let us imagine that we have a solution chunk which we will later refer to:
+
+```{r Solution-1, eval=FALSE, anchor=T, echo.label=T}
+car_summary<-summary(cars)
+```
+
+Followed by 'hidden' chunk that generates some image...
+
+```{r car-plot, echo=F, fig.cap="car-plot", warning=FALSE, anchor=T}
+plot(cars)
+```
+
+I didn't bother figuring out why fig.cap wasn't inserted in the html rendering, but since that isn't what is being described here let's just move on...
+
+This following chunk's noisy output, even though `quietly=T` and `warning=F` is annoying but the table is output just fine.  It illustrates what can be done with the output from `r secref("Solution-1")`.
+
+```{r car-summary, echo=T, warning=FALSE, anchor=T, pgbreak=T, echo.label=F}
+library(pander, quietly=T)
+car_summary<-summary(cars)
+pander(car_summary, caption = "This is a summary of cars")
+```
+
+
+`r sec("Hooks")`
+
+
+This is made possible using hooks and R functions like these:
+
+```{r knitr-setup, ref.label="setup", echo=TRUE, eval=FALSE, results='markup', echo.label=T}
+```
+
+
+__Like previously mentioned ( `r secref("Introduction")` ), _anything is do-able_.__  
+
+
+### The question is,
+
+> Do you really think markdown is the right tool to use if you want to see `r chunkref("Solution-1")`, the `r chunkref("car-plot")`, or the `r chunkref("car-summary")`?  It could be especially questionable to jump to the top of `r pgref(1)` or `r pgref(2)`.
+
+`r pganchor()`
+.
+ 
+

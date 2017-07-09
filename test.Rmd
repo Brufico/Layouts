@@ -1,0 +1,38 @@
+---
+title: "test crossrefs"
+author: "Bruno Fischer Colonimos"
+date: "9 juillet 2017"
+output: html_document
+---
+
+found in https://stackoverflow.com/questions/13848137/figure-captions-references-using-knitr-and-markdown-to-html
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r functions, include=FALSE}
+# A function for captioning and referencing images
+fig <- local({
+    i <- 0
+    ref <- list()
+    list(
+        cap=function(refName, text) {
+            i <<- i + 1
+            ref[[refName]] <<- i
+            paste("Figure ", i, ": ", text, sep="")
+        },
+        ref=function(refName) {
+            ref[[refName]]
+        })
+})
+```
+
+
+```{r cars, echo=FALSE, fig.cap=fig$cap("cars", "Here you see some interesting stuff about cars and such.")}
+plot(cars)
+```
+
+What you always wanted to know about cars is shown in figure `r fig$ref("cars")`
+
+
