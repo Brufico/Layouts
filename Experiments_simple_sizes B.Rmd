@@ -3,8 +3,12 @@ title: "Experiment with figure sizes"
 author: "BFC"
 date: "5 juillet 2017"
 # header-includes:  
-#     - \usepackage{float}
+#     - \usepackage{float} ## for bookdown template
 fontsize: 12pt
+urlcolor: "red"   ## external
+linkcolor: "blue" ## internal
+lot: yes    ## list of tables
+lof: yes    ## list of figures
 documentclass: article
 classoption: a4paper
 geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=2cm,footskip=1cm" # try effect
@@ -16,6 +20,7 @@ output:
     toc: yes
     template: latex_temp2.latex
     fig_caption: yes
+
   # html_document:
   #   number_sections: yes
   #   toc: yes
@@ -40,7 +45,23 @@ is_latex <- function() {
         identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "latex")
 }
 
-pdfoutput <- is_latex()
+pdfoutput <- is_latex() # tells if we are converting through latex, ie to pdf
+
+
+# my take on chunk names / reference for tables and figures
+
+chunkname <- function() {knitr::opts_current$get("label")}
+
+# Table captions
+tabcap <- function(caption, chunklabel=knitr::opts_current$get("label")) {
+        paste0("\\label{tab:", chunklabel, "}", caption)
+}
+# Table captions ??
+figcap <- function(caption, chunklabel=knitr::opts_current$get("label")) {
+        # debug
+        thislabel <<- chunklabel
+        paste0("\\label{fig:", chunklabel, "}", caption)
+}
 
 # personal code, 
 
@@ -96,7 +117,9 @@ knitr::set_alias(w = "fig.width", a = "fig.asp")
 knitr::opts_chunk$set(echo = TRUE, fig.width = w.23, fig.asp = a.34 , fig.align = "center", fig.show = "hold")
 ```
 
-## R Markdown
+---------------
+
+# R Markdown {#rmd}
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
@@ -105,26 +128,53 @@ When you click the **Knit** button a document will be generated that includes bo
 
 ```{r lib, include=FALSE}
 library(ggplot2)
+library(dplyr)
+library(pander)
 ```
 
 
+* Let us print summary of "Cars", with a kable table
 
 ```{r cars}
-summary(cars)
 
-x <- 1:3 # dummy
-
-knitr::kable(summary(cars)) # changed
+knitr::kable(summary(cars), 
+             caption = tabcap("This is the 'cars' Kable Table")) # changed
 ```
 
-## Including Plots
+* and a table for the mean. standard deviation of each col
+
+```{r meansd}
+tab <- sapply(X = cars, FUN = function(col) {
+        c(mean(col,na.rm = TRUE),
+          sd(col, na.rm = TRUE))
+} )
+
+row.names(tab) <- c("Mean", "Standard deviation")
+
+kable(tab, 
+      caption = tabcap("This is the 'meansd' kable table (mean+sd)"))
+```
+
+
+
+
+* Now we should show head(cars) with a pander table
+
+```{r thisispander, cache=TRUE}
+pander(head(cars), caption = tabcap("Pandertable one"))
+```
+
+
+# Including Plots {#plots}
+
+This is the beginning of a wonderful friendship! {#friendship}
 
 You can also embed plots, for example:
 
 Sur 2 colonnes:(4 plots)
 
 
-```{r basic, cache = TRUE, fig.width=w.12, fig.asp=a.34 } 
+```{r basic, cache = TRUE, fig.width=w.12, fig.asp=a.34, fig.cap = "2 cols 4 plots(chunk = 'basic')" } 
 df <- data.frame(
   x = c(3, 1, 5), 
   y = c(2, 4, 6), 
@@ -141,7 +191,7 @@ p + geom_tile() + ggtitle("raster")
 
 * Idem 3 colonnes, avec modèle prédéfini
 
-```{r basic2, cache = TRUE, opts.label = ".f13"}
+```{r basic2, cache = TRUE, opts.label = ".f13", fig.cap = "4 cols 4 plots(chunk = 'basic2')"}
 p <- ggplot(df, aes(x, y, label = label)) + 
   labs(x = NULL, y = NULL) + # Hide axis label
   theme(plot.title = element_text(size = 12)) # Shrink plot title
@@ -154,7 +204,7 @@ p + geom_tile() + ggtitle("raster")
 
 4 colonnes
 
-```{r basicx2, cache = TRUE, w=w.14, fig.asp=a.13}
+```{r basicx2, cache = TRUE, w=w.14, fig.asp=a.13, fig.cap = "4 cols 4 plots(chunk = 'basicx2')"}
 p + geom_line() + ggtitle("line")
 p + geom_area() + ggtitle("area")
 p + geom_path() + ggtitle("path")
@@ -166,7 +216,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 Again: 
 
-```{r pressure, echo=TRUE, w=w.13, a=a.12}
+```{r pressure, echo=TRUE, w=w.13, a=a.12, fig.cap = "3 cols 3 base plots(chunk = 'pressure'). Not so good."}
 x1 = 1:6
 y1 = sqrt(x1)
 y2 = 1 - (x1 - 3) ^ 2 / 9
@@ -185,13 +235,12 @@ par(mgp = curmgp)
 
 ```
 
-**That's it!**
 
 Some more tries
 
 ```{r somemore}
 knitr::opts_chunk$get("label")
-
+knitr::opts_current$get("label")
 knitr::opts_knit$get("width") # number of characters in R
 knitr::opts_chunk$get("max_width") # NULL
 knitr::opts_chunk$get("out.width") # 65%
@@ -201,5 +250,32 @@ knitr::opts_chunk$get("fig.width")
 
 ```
 
+# Links/ references {#refs}
 
+And now two internal references:
 
+* header references
+    * See the [R Markdown section](#Rmd)
+    * See the [Plots section](#plots)
+* Table references a la test reference; does **not** work : link points to beginning
+    * refer to table [The "Summary table"](#tab:cars)
+    * refer to [the means/SD table](#tab:meansd)
+    * refer to [Pander table](#tab:thisispander) 
+* Table references a la Latex (création des refs avec tabcap, appel avec `\ref{...)`
+    * refer to table [The "Summary table"], ie table \ref{tab:cars}
+    * refer to [the means/SD table], ie table \ref{tab:meansd}
+    * refer to [Pander table], ie table \ref{tab:thisispander}
+* Figure references
+    * create figcap ??? no need !!!
+    * refer to figure \ref{fig:basic}
+    * refer to figure \ref{fig:basic2}
+    * refer to figure \ref{fig:basicx2}
+    * refer to figure \ref{fig:pressure}
+* Code references ?
+    * bloc of code \ref{basic} : NON, ne fonctionne pas
+    * bloc of code [basic](basic) : NON, ne fonctionne pas
+* text references
+    * [friendship](#friendship)  : NON, ne fonctionne pas (début)
+    
+    
+**That's it!**
