@@ -1,0 +1,53 @@
+---
+title: "Untitled"
+author: "Bruno Fischer Colonimos"
+date: "11 juillet 2017"
+output: 
+  html_document:
+    fig_caption: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libs}
+library(ggplot2)
+library(knitr)
+
+```
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+kable(summary(cars))
+```
+
+## Including Plots
+
+You can also embed and reference plots, for example: plot <A HREF=#foo>Figure 1</A>, or plot <A HREF=#fee>Figure 2</A>  
+
+```{r pressure, echo=FALSE, fig.cap = "Hard Text, no auto num"}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r foo, fig.cap = "<a name= foo></a> This is caption 1" }
+ggplot(mtcars, aes(wt, mpg))+ geom_point()
+
+```
+
+
+```{r fee, fig.cap = "<a name= fee></a> This is caption 2" }
+ggplot(mtcars, aes(cyl, mpg))+ geom_boxplot(aes(group=cyl))
+
+```
+

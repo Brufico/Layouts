@@ -1,0 +1,195 @@
+---
+title: "Cross refs, captions + figures with Latex/Pdf documents"
+author: "Bruno Fischer Colonimos"
+date: "11 juillet 2017"
+include_graphics: yes
+linkcolor: red
+lof: yes
+lot: yes
+output: 
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+
+---
+
+
+****************
+ \ 
+ \ 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 3, fig.height=2, fig.align = "center", fig.show = "hold")
+```
+
+
+```{r libs}
+library(ggplot2)
+library(knitr)
+library(pander)
+library(xtable)
+```
+
+
+# Objective
+
+Find hard-coded ways to cross-refs. 
+Here all is in Latex
+
+
+# Conclusions
+
+* figures
+    * do not need a "Label" in their captions, 
+    * are crossreferencable, as soon as they have a caption option in the chunk.
+    (i.e. fig.cap = "some text" creates the reference. The anchor name is the chunk name)
+    * What if they are supplied a different name ??
+    
+* tables
+    * do need a label command in their captions
+    * If a table is create without a caption, the table index is still incremented: if captions are enabled, it is better to systematically caption all tables. 
+
+
+# Including / referencing  Plots and table examples
+
+You can embed and reference plots, 
+
+
+## Referencing elements produced later in the document 
+
+Let us reference them before we create them: for example:
+
+* We first have 
+    * an uncaptioned kable table in chunk firsttbchunk: table \ref{tab:firsttbchunk}
+    * an uncaptioned pander table in chunk firsttb2chunk: table \ref{tab:firsttb2chunk}    
+    * an uncaptioned plot figure \ref{fig:firstchunk}, (chunk name as anchor)
+
+    * a text-captioned (without label) plot figure \ref{fig:secchunk}, (chunk name as anchor), and 
+    * a text-captioned plot from an unnamed chunk : \ref{fig:unnamed-chunk-1} (chunk name as anchor)
+
+* Regular captioned figures:
+    * Figure \ref{fig:pressure} (using chunk name as anchor)
+    * Figure \ref{fig:foo} or 
+    * figure \ref{fig:fee}  and at last 
+    * figure \ref{fig:faa}
+
+
+* Referencing the tables : 
+    * Table \ref{tab:firsttbchunk},
+    * Table \ref{tab:firsttb2chunk},
+    * table \ref{tab:mtcars}, 
+    * table \ref{tab:cars}
+
+
+
+## Creating Plots and tables
+
+### One table and more plots
+
+```{r firsttbchunk}
+data("ToothGrowth")
+kable(head(ToothGrowth), caption = "hehe")
+```
+
+```{r firsttb2chunk}
+pander(head(faithful), caption = "hoho")
+```
+
+```{r firstchunk}
+ggplot(ToothGrowth, aes(dose,len, color=supp))+ geom_jitter()
+```
+
+
+```{r secchunk, fig.cap="text capped figure from secchunk"}
+ggplot(ToothGrowth, aes(dose,len, color = supp))+ geom_jitter() + facet_grid(. ~ supp)
+```
+
+
+```{r , fig.cap="text capped figure from unknown"}
+ggplot(ToothGrowth, aes(dose,len, color = supp))+ geom_jitter() + facet_grid(supp ~ .)
+```
+
+
+
+```{r pressure, echo=FALSE, fig.cap = "hard-coded"}
+# removed:"\\label{fig:foo}This is caption fig 0"
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r foo, fig.cap = "caption fig 1"}
+ggplot(mtcars, aes(wt, mpg))+ geom_point()
+```
+
+
+```{r fee, fig.cap = "\\label{fig:fee}This is caption fig 2" }
+ggplot(mtcars, aes(cyl, mpg))+ geom_boxplot(aes(group=cyl))
+```
+
+Some more text to separate items the, a ast plot
+
+```{r chunfkfaa, fig.cap = "\\label{fig:faa}This is caption fig 3"}
+ggplot(mtcars, aes(disp, mpg))+ geom_point(aes(color=factor(cyl)))
+
+```
+
+### More Tables:
+
+You can have tables like this:
+
+```{r mtcars}
+kable(head(mtcars[, 1:5]), 
+      caption = "\\label{tab:mtcars}This is the 'mtcars' `kable` table (ie 1)")
+      
+```
+
+
+Or another: 
+
+```{r cars}
+kable(summary(cars), 
+      caption = "\\label{tab:cars}This is the 'cars' `kable` table (ie 2)")
+```
+
+And another
+
+
+```{r xcars}
+xtable(summary(cars), 
+      caption = "\\label{tab:xcars}This is the 'cars' `Xtable` table (ie 3)")
+```
+
+
+
+## Referencing again after the creation:
+
+
+And you can also reference figures again:  
+
+
+* we first have 
+    * an uncaptioned plot figure \ref{fig:firstchunk}, 
+    * and an uncapped table in the same  chunk: table \ref{tab:firsttbchunk}
+    * a text-captioned (without label) plot figure \ref{fig:secchunk}, (chunk name as anchor), and 
+    * a text-captioned plot from an unnamed chunk : \ref{fig:unnamed-chunk-1} (chunk name as anchor)
+
+* Regular captioned figures:
+    * Figure \ref{fig:pressure} (using chunk name as anchor)
+    * Figure \ref{fig:foo} or 
+    * figure \ref{fig:fee}  and at last 
+    * figure \ref{fig:faa}
+
+
+Referencing the tables : 
+
+    * Table \ref{tab:firsttbchunk}, 
+    * table \ref{tab:mtcars}, 
+    * table \ref{tab:cars}
+
+
+# The end
+
+And some text to finish: 
+**Goodbye!**

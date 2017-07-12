@@ -1,0 +1,84 @@
+---
+title: "Cross refs, captions + figures with HTML"
+author: "Bruno Fischer Colonimos"
+date: "11 juillet 2017"
+output: 
+  html_document:
+    fig_caption: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 3, fig.height= 2.5, fig.align = "center")
+```
+
+
+```{r libs}
+library(ggplot2)
+library(knitr)
+
+```
+
+
+## Objective
+
+Find hard-coded ways to cross-refs. 
+
+Here all is in Hard-coded HTML
+
+## Including / referencing  Plots and table
+
+You can embed and reference plots, for example: plot <A HREF=fig:foo>Figure 1</A>, or plot <A HREF=fig:fee>Figure 2</A>  and at last <A HREF=fig:faa>Figure 3</A>
+
+Referencing the tables : <A HREF=#tab:mtcars> Table 1</A>, <A HREF=#tab:cars> Table 2</A>
+
+### Plots
+
+```{r pressure, echo=FALSE, fig.cap = "Hard Text, no auto num"}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r foo, fig.cap = "<a name=fig:foo></a>This is caption 1" }
+ggplot(mtcars, aes(wt, mpg))+ geom_point()
+```
+
+
+```{r fee, fig.cap = "<a name=fig:fee></a> This is caption 2" }
+ggplot(mtcars, aes(cyl, mpg))+ geom_boxplot(aes(group=cyl))
+```
+
+Some more text to separate items the, a ast plot
+
+```{r chunkfaa, fig.cap = "<a name=#fig:faa></a> This is caption 3" }
+ggplot(mtcars, aes(disp, mpg))+ geom_point(aes(color=factor(cyl)))
+
+```
+
+### Tables:
+
+You can have tables like this:
+
+```{r mtcars}
+kable(head(mtcars[, 1:5]), 
+      caption = "<a name=tab:mtcars>Table 1: This is the 'mtcars' `kable` table</a>")
+      
+```
+
+
+Or else:
+
+```{r cars}
+kable(summary(cars), 
+      caption = "<a name=tab:mtcars>Table 2: This is the 'cars' `kable` table</a>")
+```
+
+
+an you can also reference figures again: plot <A HREF=#fig:foo>Figure 1</A>, or plot <A HREF=#fee>Figure 2</A>  and at last <A HREF=#faa>Figure 3</A>
+
+You can embed and reference plots, for example: plot <A HREF=fig:foo>Figure 1</A>, or plot <A HREF=fig:fee>Figure 2</A>  and at last <A HREF=fig:faa>Figure 3</A>
+
+Referencing the tables : <A HREF=#tab:mtcars> Table 1</A>, <A HREF=#tab:cars> Table 2</A>
+
+And some text to finish: Goodbye!

@@ -267,11 +267,31 @@ Same thing in a code chunk:
 c(ctxt=getcontext(), Latex = is_latex(), HTML = is_html())
 ```
 
+### how to make a footnote {#foot}
+
+make a short footnote[^mynote] or a long footnote [^mylongnote], or an inline note^[The text us here. Inlines notes are easier to write, since
+you don't have to pick an identifier and move down to type the
+note.]
+
+
+
+[^mynote]: This is the text of the short footnote
+[^mylongnote]: This is the text of the long footnote: (with multiple paragraphs\
+    One can add parags \
+    And more....
+
+
+### Subscript + superscript
+
+trying: 
+Sub: F~1~, F~2~, F~2~\
+Super: e^supe^
+    
 
 
 # R Markdown {#Rmd}
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>., or Pandoc guide: http://pandoc.org/MANUAL.html 
 
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
@@ -282,12 +302,18 @@ library(dplyr)
 library(pander)
 ```
 
+Make Tables {#tablegen}
+========================
+
+Ok, now let us generate some tables:
+
 
 * Let us print summary of "Cars", with a kable table: see figure `r .ref("tab:cars")`
 
 ```{r cars}
 
 knitr::kable(summary(cars), 
+             align = "r",
              caption = tabcap("Summary Table (Kable)")) # changed
 ```
 
@@ -315,7 +341,7 @@ pander(head(cars), caption = tabcap("Head of `cars` (Pander)"))
 ```
 
 
-# Including Plots {#plots}
+# Include Plots {#plots}
 
 This is the beginning of a wonderful friendship! {#friendship}
 
