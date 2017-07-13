@@ -6,17 +6,60 @@ include_graphics: yes
 linkcolor: red
 lof: yes
 lot: yes
+include-before: "\\newcommand*{\\secref}[1]{Section~\\ref{#1}}"
 output: 
   pdf_document:
     fig_caption: yes
+    keep_tex: yes
+    number_sections: yes
     toc: yes
-
 ---
 
 
 ****************
  \ 
  \ 
+ 
+```{r prelim, echo = FALSE}
+# getcontext returns the doc conversion context
+# From Hadley's ggplot2 book:  Knowing conversion target 
+is_latex <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "latex")
+}
+
+# html same
+is_html <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "html")
+}
+
+getcontext <- function(){
+        if (is_latex()) {"latex" 
+                   } else if (is_html()) {
+                           "html"
+                   } else {"other"} 
+}
+
+centertext <- function(string, bold = FALSE, context = getcontext()){
+        switch(context,
+               html = paste0("",string, ""),
+               latex = paste0("\\begin{center}", 
+                              ifelse(bold, paste0("\\textbf{", string, "}") ,
+                                     string),
+                              "\\end{center}"),
+               other = string) 
+}
+
+pagebreak <- function(string = "", active = FALSE, context = getcontext()){
+        if (active) {
+                switch(context,
+                       html = paste0("",string, ""),
+                       latex = paste0("\\clearpage", string),
+                       other = string)         
+        } else {""}
+}        
+
+
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, fig.width = 3, fig.height=2, fig.align = "center", fig.show = "hold")
@@ -31,13 +74,13 @@ library(xtable)
 ```
 
 
-# Objective
+# Objective {#obj}
 
 Find hard-coded ways to cross-refs. 
 Here all is in Latex
 
 
-# Conclusions
+# Conclusions {#conclusions}
 
 * figures
     * do not need a "Label" in their captions, 
@@ -46,21 +89,29 @@ Here all is in Latex
     * What if they are supplied a different name ??
     
 * tables
+    * Also work without explicit label (at least for kable and pander table), but only the system knows their anchor, so ;
     * do need a label command in their captions
     * If a table is create without a caption, the table index is still incremented: if captions are enabled, it is better to systematically caption all tables. 
 
 
-# Including / referencing  Plots and table examples
+* Arbitrary anchors in text:
+    * When in a section, a `\label(id)` will point to a section header. But no link is provided to the `\ref(id)`; unless we have `number-sections: yes` in the yaml header 
 
-You can embed and reference plots, 
+* Section references
+    * see section \secref{sec:mean-diff}
 
 
-## Referencing elements produced later in the document 
+# Including / referencing  Plots and table examples {"plottables"}
+
+You can embed and reference plots. 
+
+
+## Referencing elements produced later in the document {#refbefore}
 
 Let us reference them before we create them: for example:
 
 * We first have 
-    * an uncaptioned kable table in chunk firsttbchunk: table \ref{tab:firsttbchunk}
+    * an uncaptioned kable table in chunk firsttbchunk: table \ref{tab:firsttbchunk}, or maybe \ref{tab:hehe}
     * an uncaptioned pander table in chunk firsttb2chunk: table \ref{tab:firsttb2chunk}    
     * an uncaptioned plot figure \ref{fig:firstchunk}, (chunk name as anchor)
 
@@ -73,18 +124,39 @@ Let us reference them before we create them: for example:
     * figure \ref{fig:fee}  and at last 
     * figure \ref{fig:faa}
 
-
 * Referencing the tables : 
     * Table \ref{tab:firsttbchunk},
     * Table \ref{tab:firsttb2chunk},
     * table \ref{tab:mtcars}, 
     * table \ref{tab:cars}
 
+* referencing arbitrary text
+    * header link: [more tables section](#sec:moretab) \pageref{#moretab}
+    * header ref : \secref(sec:moretab)
+    * text \ref{text:verse} link that takes the form of the section number
+    * try also the link form: [#sec:moretab]
 
 
-## Creating Plots and tables
+## Creating Plots and tables {#create}
 
-### One table and more plots
+\label{text:verse}
+
+|       Precise and Visual 
+|       ------------------:
+|          The plot reigns supreme
+|            In the ocean of stats
+|  and brings secrets to the light
+| hidden treasures, drowned jewels
+|
+|       But the table that exposes
+|              facts to the reader
+|    brings numbers in the picture
+|             shows proof forcibly
+|                  without a doubt
+
+
+
+### Two tables and more plots {#twotab}
 
 ```{r firsttbchunk}
 data("ToothGrowth")
@@ -135,7 +207,7 @@ ggplot(mtcars, aes(disp, mpg))+ geom_point(aes(color=factor(cyl)))
 
 ```
 
-### More Tables:
+### More Tables {#sec:moretab}
 
 You can have tables like this:
 
@@ -153,21 +225,22 @@ kable(summary(cars),
       caption = "\\label{tab:cars}This is the 'cars' `kable` table (ie 2)")
 ```
 
+`r pagebreak() `
+
 And another
 
-
-```{r xcars}
-xtable(summary(cars), 
-      caption = "\\label{tab:xcars}This is the 'cars' `Xtable` table (ie 3)")
+```{r xcars, results='asis'}
+kable(list(summary(cars),summary(ToothGrowth)), 
+      caption = "\\label{tab:xcars}This is the 'cars' `kable` double table (ie 3)")
 ```
 
 
 
-## Referencing again after the creation:
+## Referencing again after the creation: {#refagain}
 
+`r pagebreak()`
 
 And you can also reference figures again:  
-
 
 * we first have 
     * an uncaptioned plot figure \ref{fig:firstchunk}, 
@@ -182,14 +255,16 @@ And you can also reference figures again:
     * figure \ref{fig:faa}
 
 
-Referencing the tables : 
-
+* Referencing the tables : 
     * Table \ref{tab:firsttbchunk}, 
     * table \ref{tab:mtcars}, 
     * table \ref{tab:cars}
+    * table \ref{tab:xcars}
 
 
-# The end
+# The end {#end}
 
-And some text to finish: 
-**Goodbye!**
+And some text to finish: \
+`r centertext( "Goodbye", bold = TRUE)`
+
+

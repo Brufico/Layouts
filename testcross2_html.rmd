@@ -71,7 +71,8 @@ Or else:
 
 ```{r cars}
 kable(summary(cars), 
-      caption = "<a name=tab:mtcars>Table 2: This is the 'cars' `kable` table</a>")
+      caption = "<a name=tab:mtcars>Table 2: This is the 'cars' `kable` table</a>",
+      booktabs = TRUE)
 ```
 
 
