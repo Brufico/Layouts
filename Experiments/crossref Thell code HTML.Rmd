@@ -3,17 +3,26 @@ title: "Experiments cross-referencing"
 author: "Thell 'Bo' Fowler (Thell) modifs by Bruno Fischer Colonimos"
 date: "9 juillet 2017"
 output:
-  html_document: default
-  pdf_document: default
+  html_document:
+    fig_cap: yes
+  pdf_document: 
+    fig_cap: yes
 ---
+
+# First, some hidden code {#sec:code}
+
 
 ```{r setup0, include=FALSE}
 library(knitr)
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, fig.pos = "H") 
 ```
 
+**Main code chunks** 
 
 ```{r setup, echo=FALSE, results='hide'}
+
+# reference functions
+
 chunkref <- local({
   function(chunklabel) {
     sprintf('[%s](#%s)', chunklabel, chunklabel )
@@ -31,6 +40,57 @@ pgref <- local({
   sprintf('[Page-%i](#Page-%i)', n, n)
 })
 
+# added*****************************
+
+# From Hadley's ggplot2 book:  Knowing conversion target 
+is_latex <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "latex")
+}
+
+# html same
+is_html <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "html")
+}
+
+pdfoutput <- is_latex() # tells if we are converting through latex, ie to pdf
+
+# getcontext returns the doc conversion context
+getcontext <- function(){
+        if (is_latex()) {"latex" 
+                   } else if (is_html()) {
+                           "html"
+                   } else {"other"} 
+}
+
+
+# get the code chunk name (for captionning)
+
+getchunkname <- function() {knitr::opts_current$get("label")}
+
+figref <- local({
+  function(figlabel) {
+    sprintf('[%s](#%s)', figlabel, figlabel )
+  }  
+})
+
+figcap <- local({
+  function(captext, figlabel = paste0("fig:", getchunkname())) {
+    sprintf('<a name="%s"></a>%s', figlabel, captext )
+  }  
+})
+
+tabcap <- local({
+  function(captext, figlabel = paste0("tab:", getchunkname())) {
+    sprintf('<a name="%s"></a>%s', figlabel, captext )
+  }  
+})
+
+
+# test
+# cat(figcap("Le texte", "etiquette"))
+
+
+# creating the labels/anchors
 sec <- local({
   function(seclabel) {
     sprintf('# <a name="%s"/> %s', seclabel, seclabel )
@@ -55,25 +115,27 @@ pganchor <- local({
   }
 })
 
-knitr::knit_hooks$set( anchor = function(before, options, envir) {
-  if ( before ) {
-    sprintf('<a name="%s"/>\n', options$label )
-  }
-})
+# hooks *************
+# 
+# knitr::knit_hooks$set( anchor = function(before, options, envir) {
+#   if ( before ) {
+#     sprintf('<a name="%s"/>\n', options$label )
+#   }
+# })
+# 
+# knitr::knit_hooks$set( echo.label = function(before, options, envir) {
+#   if ( before ) {
+#     sprintf('> %s', options$label )
+#   }
+# })
+# 
+# knitr::knit_hooks$set( pgbreak = function(before, options, envir) {
+#   if ( !before ) {
+#     pganchor()
+#   }
+# })
 
-knitr::knit_hooks$set( echo.label = function(before, options, envir) {
-  if ( before ) {
-    sprintf('> %s', options$label )
-  }
-})
-
-knitr::knit_hooks$set( pgbreak = function(before, options, envir) {
-  if ( !before ) {
-    pganchor()
-  }
-})
-
-````
+```
 
 found at :https://gist.github.com/Thell/5827832#file-exmple-rmd
 
@@ -91,39 +153,46 @@ car_summary<-summary(cars)
 
 Followed by 'hidden' chunk that generates some image...
 
-```{r car-plot, echo=F, fig.cap="car-plot", warning=FALSE, anchor=T}
+```{r car_plot, echo=TRUE, fig.cap=figcap("One Figure"), warning=FALSE, anchor=TRUE}
 plot(cars)
 ```
+
 
 I didn't bother figuring out why fig.cap wasn't inserted in the html rendering, but since that isn't what is being described here let's just move on...
 
 This following chunk's noisy output, even though `quietly=T` and `warning=F` is annoying but the table is output just fine.  It illustrates what can be done with the output from `r secref("Solution-1")`.
 
-```{r car-summary, echo=T, warning=FALSE, anchor=T, pgbreak=T, echo.label=F}
+```{r car_summary, echo=T, warning=FALSE, anchor=T, pgbreak=T, echo.label=F}
 library(pander, quietly=T)
 car_summary<-summary(cars)
-pander(car_summary, caption = "This is a summary of cars")
+pander(car_summary, caption = tabcap("This is a summary of cars"))
 ```
 
+some text.
+
+`r figref("fig:car_summary" )`
 
 
-`r sec("Hooks")`
+
+
+# Hooks {#Hooks}
 
 
 This is made possible using hooks and R functions like these: ()
 
-```{r knitr-setup, ref.label="setup", echo=TRUE, eval=FALSE, results='asis', echo.label=T}
+```{r knitr-setup, ref.label="setup", echo=TRUE, eval = FALSE, results='asis' }
 ```
 
 
-__Like previously mentioned ( `r secref("Introduction")` ), _anything is do-able_.__  
+__As previously mentioned ( `r secref("Introduction")` ), _anything is do-able_.__  
 
 
-### The question is:
+# The question is:
 
 * Do you really think markdown is the right tool to use if you want to see `r chunkref("Solution-1")`, the `r chunkref("car-plot")`, or the `r chunkref("car-summary")`?  It could be especially questionable to jump to the top of `r pgref(1)` or `r pgref(2)`.
 
+
 `r pganchor()`
-.
+
  
 

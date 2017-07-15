@@ -2,8 +2,8 @@
 title: "Experiments with figure sizes and cross-references"
 author: "BFC"
 date: "5 juillet 2017"
-# header-includes:  
-#     - \usepackage{float} ## for bookdown template
+header-includes:
+    - \usepackage{float} ## for the H position parameter
 fontsize: 12pt
 urlcolor: "red"   ## external
 linkcolor: "blue" ## internal
