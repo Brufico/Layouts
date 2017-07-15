@@ -52,13 +52,57 @@ getcontext <- function(){
                    } else {"other"} 
 }
 
+# get the code chunk name (for captionning)
+getchunkname <- function() {knitr::opts_current$get("label")}
+
 
 # labelling and referencing functions
 # ===================================
 
-# principles: 
-# * captions: if captioning is enabled, all the plots should have a a caption.( default text = ""). In the caption there will be a label statement:        
+# Labelling principles: 
+# ---------------------
+# 
+# * Plot captions: if captioning is enabled, all the plots should
+# have a a caption.( default text = ""). In the caption
+# there may be a label statement. otherwise, knitr/pandoc
+# seems to do this automatically ==> label = fig:chunkname
 
+# * we may do the same for tables; label = tab:chunkname
+
+# * pictures must be labelled in the caption when included with ![caption](url)
+
+# * header have headers Id: link with [text](#Id)
+# 
+# * Label arbitrary text with any label. 
+
+
+# Referencing:
+# ------------
+# 
+# * In LaTex/PDF
+# 
+# ref(label)/pageref(label)
+#            --> if figure, fig number / page number
+#            ==> if table, tab number / page number
+#            --> if section/heder header num / beginning pagenum
+#            --> if arbitrary text section num / label pagenum
+#                 ==> In each case we can have reference + link
+# * In HTML
+# ref(label)/pageref(label)
+#            --> if figure, fig number / nothing
+#            --> else nothing for now but a link to the object. 
+#                The text of the link will be Table:label / Section:Label or Label  
+# 
+# Consequence: the arguments of general reference function refs:
+# 
+# refs(prefix, id , pageref = FALSE, capital = FALSE) 
+#        ==> returning (LaTex) : figure/table/section # , page ## 
+#                      (HTML) : figure # (ref + link)
+#                               table/section label (link only)
+# 
+
+# Definitions for LaTex:
+# 
 cap <- function(prefix, id, text = "", 
                 center=FALSE, col="black", 
                 inline=FALSE){
@@ -66,11 +110,30 @@ cap <- function(prefix, id, text = "",
         paste0("\\label{", refName, "}",text)
 }
 
-ref <- function(prefix, id, pagen = FALSE){
+ref1 <- function(prefix, id, page = FALSE){
         refName <- paste(prefix, id, sep = ":")
-        lcommand <- ifelse(pagen,"pageref","ref")
+        lcommand <- ifelse(page,"pageref","ref")
         paste0("\\", lcommand,"{", refName, "}")
 }
+
+
+refs <- function(prefix, id, withpage = FALSE, capital = FALSE){
+        refName <- paste(prefix, id, sep = ":")
+        typeref <- switch(prefix,
+                         fig = if(capital) {"Figure"} else {"figure"} ,
+                         tab = if(capital) {"Table"} else {"table"},
+                         sec = if(capital) {"Section"} else {"section"},
+                         no = if(capital) {"Section"} else {"section"}
+        )
+        main <- paste(typeref, ref1(prefix, id, page = FALSE), sep = " ")
+        result <- if (withpage) {
+                paste(main , ", page", ref1(prefix, id, page = TRUE))
+        } else {main}
+}                         
+
+
+
+
 
 
 #  helper functions
