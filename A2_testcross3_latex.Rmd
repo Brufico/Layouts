@@ -105,25 +105,33 @@ getchunkname <- function() {knitr::opts_current$get("label")}
 # 
 cap <- function(prefix, id, text = "", 
                 center=FALSE, col="black", 
-                inline=FALSE){
+                inline=FALSE,
+                context = getcontext()) {
         refName <- paste(prefix, id, sep = ":")
-        paste0("\\label{", refName, "}",text)
+        switch(context,
+               latex = paste0("\\label{", refName, "}",text),
+               html = sprintf('<a name="%s"></a>%s', refName, text ),
+               other = text)
 }
 
-ref1 <- function(prefix, id, page = FALSE){
+ref1 <- function(prefix, id, page = FALSE, context =getcontext()){
         refName <- paste(prefix, id, sep = ":")
-        lcommand <- ifelse(page,"pageref","ref")
-        paste0("\\", lcommand,"{", refName, "}")
+        switch(context,
+               latex = {lcommand <- ifelse(page,"pageref","ref")
+                        retval <- paste0("\\", lcommand,"{", refName, "}")},
+               html = paste0("<a href=\"#", 
+                             refName, "\">", ref[[refName]], "</a>"), #only ok for figs
+               other = "")
 }
 
 
 refs <- function(prefix, id, withpage = FALSE, capital = FALSE){
         refName <- paste(prefix, id, sep = ":")
         typeref <- switch(prefix,
-                         fig = if(capital) {"Figure"} else {"figure"} ,
-                         tab = if(capital) {"Table"} else {"table"},
-                         sec = if(capital) {"Section"} else {"section"},
-                         no = if(capital) {"Section"} else {"section"}
+                         fig = if (capital) {"Figure"} else {"figure"} ,
+                         tab = if (capital) {"Table"} else {"table"},
+                         sec = if (capital) {"Section"} else {"section"},
+                         no = if (capital) {"Section"} else {"section"}
         )
         main <- paste(typeref, ref1(prefix, id, page = FALSE), sep = " ")
         result <- if (withpage) {
