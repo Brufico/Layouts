@@ -1,0 +1,474 @@
+---
+title: "Experiments with figure sizes and cross-references"
+author: "BFC"
+date: "5 juillet 2017"
+# header-includes:  
+#     - \usepackage{float} ## for bookdown template
+fontsize: 12pt
+urlcolor: "red"   ## external
+linkcolor: "blue" ## internal
+lot: yes    ## list of tables
+lof: yes    ## list of figures
+documentclass: article
+classoption: a4paper
+# lang: fr   # Language Fails with fr/ french/ frechb
+geometry: "left=1.5cm,right=1.5cm,top=1.5cm,bottom=2cm,footskip=1cm" # try effect
+footer: \thetitle \ \textemdash \ \thepage 
+output: 
+  pdf_document:
+    # keep_tex: true
+    number_sections: yes
+    toc: yes
+    template: latex_temp2.latex
+    fig_caption: yes
+
+  html_document:
+    number_sections: yes
+    keep_md: true
+    toc: yes
+---
+
+```{r, include = FALSE}
+# # Important parameters to send to common.R
+# doclinewidth <- (21 - 1.5 - 1.5) * 0.3937 # == line width in inches
+# source("common2.R")
+# columns(1, 3 / 4)
+
+library(knitr)
+```
+
+
+```{r setup, include=FALSE}
+
+# ** Some code *******
+#######################################################
+# Identify context: output type ***********************
+
+
+# From Hadley's ggplot2 book:  Knowing conversion target 
+is_latex <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "latex")
+}
+
+# html same
+is_html <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "html")
+}
+
+pdfoutput <- is_latex() # tells if we are converting through latex, ie to pdf
+
+# getcontext returns the doc conversion context
+getcontext <- function(){
+        if (is_latex()) {"latex" 
+                   } else if (is_html()) {
+                           "html"
+                   } else {"other"} 
+}
+
+
+# get the code chunk name (for captionning)
+
+chunkname <- function() {knitr::opts_current$get("label")}
+
+
+#######################################################
+# Captioning / cross-referencing ***********************
+
+
+# Table captions
+# tabcap <- function(caption,
+#                    chunklabel=knitr::opts_current$get("label"),
+#                    context=getcontext()) {
+#         
+#         switch(context,
+#                latex = paste0("\\label{tab:", chunklabel, "}",
+#                               caption),
+#                html = paste0("<div id=tab:", chunklabel, ">",
+#                              caption, "</div>"),
+#                other = caption ) 
+# }
+
+
+tabcap <- function(caption,
+                   chunklabel=knitr::opts_current$get("label"),
+                   context=getcontext()) {
+        
+        switch(context,
+               latex = paste0("\\label{tab:", chunklabel, "}",
+                              caption),
+               html = paste0("<a name=tab:", chunklabel, ">",
+                             caption, "</a>"),
+               other = caption ) 
+}
+
+
+
+
+
+
+
+# figure captions ?? ==> No, not needed with pdf_output
+figcap <- function(caption, chunklabel=knitr::opts_current$get("label")) {
+        # debug
+        # thislabel <<- chunklabel
+        paste0("\\label{fig:", chunklabel, "}", caption)
+}
+
+# tests
+
+# tabcap("one", "thzchunk", context = "latex")
+# tabcap("one", "thzchunk", context = "html")
+
+
+# inserting a reference to a label, using the context
+
+.ref <- function(prefix = NULL,
+                 reflabel = "",
+                 context = getcontext()) {
+        switch(EXPR = context,
+               latex = paste0("\\ref{",prefix, reflabel,"}"),
+               html = paste0("<A HREF=\\#",
+                              prefix, reflabel,
+                              "\\>", reflabel , "</A>"), # reflabel here ?
+               other = paste0("(#",prefix, reflabel ,")")
+        )
+}
+
+# .ref <- function(prefix = NULL, 
+#                  reflabel = "", 
+#                  context = getcontext()) {
+#         switch(EXPR = context,
+#                latex = paste0("\\ref{",prefix, reflabel,"}"),
+#                html = paste0("<a href= #", 
+#                               prefix, reflabel,
+#                               ">", reflabel , "</a>"), # reflabel here ?
+#                other = paste0("(#",prefix, reflabel ,")")
+#         )        
+# }
+
+
+
+
+
+
+# testit
+
+# .ref(prefix= "tab:",reflabel = "onelab", context =  "latex" )
+# .ref(prefix= "fig:", reflabel = "onelab", context = "html" )
+# .ref(reflabel = "onelab", context = "html" )
+# .ref(prefix= "fig:", reflabel = "onelab", context = "other" )
+
+
+#######################################################
+# figures dimensions parameters ***********************
+
+#   aspect ratio
+a.13 <- 1 / 3
+a.12 <- 0.5
+a.34 <- 0.75
+a.11 <- 1
+a.43 <- 1.33
+a.21 <- 2
+
+#  width
+# == doc line width in inches * security coeff 0.98
+
+doclinewidth <- (21 - 1.5 - 1.5) * 0.3937 * 0.98  # légère correction
+
+w.11 <-  doclinewidth
+w.34 <- 3 / 4 * doclinewidth
+w.23 <- 2 / 3 * doclinewidth
+w.12  <-  1 / 2 * doclinewidth
+w.13 <- 1 / 3 * doclinewidth
+w.14 <- 1 / 4 * doclinewidth * 0.99 # de nouveau: légère correction
+
+# #   output width (only pdf)
+# one3outwidth <- if (pdfoutput) {"0.32\\textwidth"} else {NULL}
+# halfoutwidth <- if (pdfoutput) {"0.48\\textwidth"} else {NULL}
+# two3outwidth <- if (pdfoutput) {"0.64\\textwidth"} else {NULL}
+# fulloutwidth <- if (pdfoutput) {"\\textwidth"} else {NULL}
+
+# configs pr?d?finies knitr::opts_template$set()
+
+.codeR <- paste0( "knitr::opts_template$set(",
+                  if (pdfoutput) {paste0(".f14 = list(fig.width = ", 
+                                         w.14, 
+                                         ", fig.asp = ", 
+                                         a.12, "), ")
+                          } else { # w.14 too narrow to render ok in html
+                                  paste0(".f14 = list(fig.width = ", 
+                                         w.13, 
+                                         ", fig.asp = ", 
+                                         a.34, "), ")
+                                  
+                          }  ,
+                  ".f13 = list(fig.width = ", w.13, ", fig.asp = ", a.34, "), ",
+                  ".f12 = list(fig.width = ", w.12, ", fig.asp = ", a.34, "), ",
+                  ".fnorm = list(fig.width = ", w.23, ", fig.asp = ", a.34, "), ",
+                  ".fnormsq = list(fig.width = ", w.23, ", fig.asp = ", a.11, "), ",
+                  ".fnormhigh = list(fig.width = ", w.23, ", fig.asp = ", a.43, "), ",
+                  ".fnormvhigh = list(fig.width = ", w.23, ", fig.asp = ", a.21, "), ",
+                  ".fulllow = list(fig.width = ", w.11, ", fig.asp = ", a.34, "),",
+                  ".full = list(fig.width = ", w.11, ", fig.asp = ", a.34, "),",
+                  ".fullsq = list(fig.width = ", w.11, ", fig.asp = ", a.11, "),",
+                  ".fullhigh = list(fig.width = ", w.11, ", fig.asp = ", a.43, "),",
+                  ".fullvhigh = list(fig.width = ", w.11, ", fig.asp = ", a.21, ")",
+                  ")"
+)
+
+
+eval(parse(text = .codeR))  
+              
+              
+# verif
+# knitr::opts_template$get()
+# knitr::opts_template$get(".f14")
+
+# Set aliases
+knitr::set_alias(w = "fig.width", a = "fig.asp")
+
+# default options
+knitr::opts_chunk$set(echo = TRUE, fig.width = w.23, fig.asp = a.34 , fig.align = "center", fig.show = "hold")
+```
+
+
+<!-- Some Inline HTML (CSS) , formatting tables -->
+
+<style>
+
+table {
+    width: 100%;
+    border-top-style: solid;
+    border-top-width: medium;
+    border-top-color: initial;
+    border-bottom-style: solid;
+    border-bottom-width: medium;
+    border-bottom-color: initial;
+}
+
+</style>
+
+<!-- End Inline HTML -->
+
+
+---------------
+
+# Intro {#intro}
+
+Just to test the context- detection functions:
+
+* the context is `r getcontext()`
+* Is it Latex? `r is_latex()`
+* Is it HTML? `r is_html()`
+
+Same thing in a code chunk:
+
+```{r}
+c(ctxt=getcontext(), Latex = is_latex(), HTML = is_html())
+```
+
+### how to make a footnote {#foot}
+
+make a short footnote[^mynote] or a long footnote [^mylongnote], or an inline note^[The text us here. Inlines notes are easier to write, since
+you don't have to pick an identifier and move down to type the
+note.]
+
+
+
+[^mynote]: This is the text of the short footnote
+[^mylongnote]: This is the text of the long footnote: (with multiple paragraphs\
+    One can add parags \
+    And more....
+
+
+### Subscript + superscript
+
+trying: 
+Sub: F~1~, F~2~, F~2~\
+Super: e^supe^
+    
+
+
+# R Markdown {#Rmd}
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>., or Pandoc guide: http://pandoc.org/MANUAL.html 
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+```{r lib, include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(pander)
+```
+
+Make Tables {#tablegen}
+========================
+
+Ok, now let us generate some tables:
+
+
+* Let us print summary of "Cars", with a kable table: see figure `r .ref("tab:cars")`
+
+```{r cars}
+
+knitr::kable(summary(cars), 
+             align = "r",
+             caption = tabcap("Summary Table (Kable)")) # changed
+```
+
+* and a table for the mean. standard deviation of each col. see Table `r .ref("tab:meansd")`
+
+```{r meansd}
+tab <- sapply(X = cars, FUN = function(col) {
+        c(mean(col,na.rm = TRUE),
+          sd(col, na.rm = TRUE))
+} )
+
+row.names(tab) <- c("Mean", "Standard deviation")
+
+kable(tab, 
+      caption = tabcap("Mean - Standard deviation kable table"))
+```
+
+
+
+
+* Now we should show head(cars) with a pander table: Table `r .ref("tab:thisispander")`
+
+```{r thisispander, cache=FALSE}
+pander(head(cars), caption = tabcap("Head of `cars` (Pander)"))
+```
+
+
+# Include Plots {#plots}
+
+This is the beginning of a wonderful friendship! {#friendship}
+
+You can also embed plots, for example:
+
+Sur 2 colonnes:(4 plots) in figure `r .ref("fig:basic")`
+
+
+```{r basic, cache = TRUE, fig.width=w.12, fig.asp=a.34, fig.cap = "2 cols 4 plots(chunk = 'basic')" } 
+df <- data.frame(
+  x = c(3, 1, 5), 
+  y = c(2, 4, 6), 
+  label = c("a","b","c")
+)
+p <- ggplot(df, aes(x, y, label = label)) + 
+  labs(x = NULL, y = NULL) + # Hide axis label
+  theme(plot.title = element_text(size = 12)) # Shrink plot title
+p + geom_point() + ggtitle("point")
+p + geom_text() + ggtitle("text")
+p + geom_bar(stat = "identity") + ggtitle("bar")
+p + geom_tile() + ggtitle("raster")
+```
+
+* Idem 3 colonnes, avec modèle prédéfini: figure `r .ref("fig:basic2")`
+
+```{r basic2, cache = TRUE, opts.label = ".f13", fig.cap = "4 cols 4 plots(chunk = 'basic2')"}
+p <- ggplot(df, aes(x, y, label = label)) + 
+  labs(x = NULL, y = NULL) + # Hide axis label
+  theme(plot.title = element_text(size = 12)) # Shrink plot title
+p + geom_point() + ggtitle("point")
+p + geom_text() + ggtitle("text")
+p + geom_bar(stat = "identity") + ggtitle("bar")
+p + geom_tile() + ggtitle("raster")
+```
+
+
+4 colonnes dans la  figure `r .ref("fig:basicx2")`
+
+```{r basicx2, cache = TRUE, w=w.14, fig.asp=a.13, fig.cap = "4 cols 4 plots(chunk = 'basicx2')"}
+p + geom_line() + ggtitle("line")
+p + geom_area() + ggtitle("area")
+p + geom_path() + ggtitle("path")
+p + geom_polygon() + ggtitle("polygon")
+```
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+Again: figure `r .ref("fig:pressure")`
+
+```{r pressure, echo=TRUE, w=w.13, a=a.12, fig.cap = "3 cols 3 base plots(chunk = 'pressure'). Not so good."}
+x1 = 1:6
+y1 = sqrt(x1)
+y2 = 1 - (x1 - 3) ^ 2 / 9
+
+curmar <- par("mar")
+par(mar = c(4, 4, 0.1, 0.1) + 0.1)
+curmgp = par("mgp")
+par(mgp = c(1,.5,0))
+
+plot(pressure, cex=0.5, cex.lab = .5, cex.axis = 0.5) 
+plot(x1,y1, cex=0.5, cex.lab = .5, cex.axis = 0.5)
+plot(x1,y2, cex=0.5, cex.lab = .5, cex.axis = 0.5)
+
+par(mar = curmar)
+par(mgp = curmgp)
+
+```
+
+
+Some more tries
+
+```{r somemore}
+knitr::opts_chunk$get("label")
+knitr::opts_current$get("label")
+knitr::opts_knit$get("width") # number of characters in R
+knitr::opts_chunk$get("max_width") # NULL
+knitr::opts_chunk$get("out.width") # 65%
+knitr::opts_chunk$get("out.extra") # "style='max-width: 3.9in'"
+knitr::opts_chunk$get("fig.width") 
+knitr::opts_knit$get("rmarkdown.pandoc.to")
+
+```
+
+# Links/ references {#refs}
+
+And now two internal references:
+
+* header references
+    * PDF: link Ok, no numbering
+    * HTML: link Ok, no numbering
+        * See the section [Introduction](#intro)
+        * See the [R Markdown section](#Rmd)
+        * See the [Plots section](#plots)
+    
+* Table references a la text reference: `[text](#anchorname)` 
+    * PDF: does **not** work : link points to beginning
+    * HTML: Links are ok, but we get no numbering  
+        * refer to table [The "Summary table"](#tab:cars)
+        * refer to [the means/SD table](#tab:meansd)
+        * refer to [Pander table](#tab:thisispander) 
+
+* Table references a la Latex or html ? (création des refs avec tabcap, appel avec `\ref{...)` ou `inline: .ref("tab:cars")`
+    * PDF: full OK
+    * HTML: Nothing
+        * refer to table [The "Summary table"], ie table `r .ref("tab:cars")`
+        * refer to [the means/SD table], ie table `\ref{tab:meansd}`, `r .ref("tab:meansd")`
+        * refer to [Pander table], ie table \ref{tab:thisispander}
+
+* Figure references latex-style
+    * PDF: full ok: number + link
+    * HTML: no
+        * create figcap ??? no need !!!
+        * refer to figure \ref{fig:basic}
+        * refer to figure \ref{fig:basic2}
+        * refer to figure \ref{fig:basicx2}
+        * refer to figure \ref{fig:pressure}
+
+* Code references ?
+    * PDF:
+    * HTML: 
+        * bloc of code \ref{basic} : NON, ne fonctionne pas
+        * bloc of code [basic](basic) : NON, ne fonctionne pas
+* text references
+    * PDF:
+    * HTML: 
+        * [friendship](#friendship)  : NON, ne fonctionne pas (début)
+    
+    
+**That's it!**
