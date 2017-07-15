@@ -37,7 +37,7 @@ library(knitr)
 
 ### setup for Knitr
 
-Fig.width etc. check the relation ship with Yaml fig_width etc.
+Fig.width etc. check the relationship with Yaml fig_width etc.
 
 ```{r}
 # default options
