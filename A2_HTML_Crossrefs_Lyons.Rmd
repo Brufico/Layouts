@@ -8,8 +8,8 @@ lot: yes
 output:
   html_document:
     fig_caption: yes
-    fig_width: 2
-    fig_height: 2.5
+    fig_width: 2    # unclear
+    fig_height: 2.5 # unclear
     number_sections: yes
     toc: yes
     toc_depth: 3
