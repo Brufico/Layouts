@@ -2,9 +2,12 @@
 title: "minimal file for HTML"
 author: BFC
 Date: "16/07/17"
+lof: yes
 output:
   html_document:
     fig_cap: yes
+    num_sections: yes
+    toc: yes
     keep_md: yes
 ---
 
@@ -13,19 +16,128 @@ output:
 library(pander)
 library(knitr)
 library(ggplot2)
-knitr::opts_chunk$set(echo = TRUE, fig.pos = "H") 
+
+# From Hadley's ggplot2 book:  Knowing conversion target 
+is_latex <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "latex")
+}
+
+# html same
+is_html <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "html")
+}
+
+
+getcontext <- function(){
+        if (is_latex()) {"latex" 
+                   } else if (is_html()) {
+                           "html"
+                   } else {"other"} 
+}
+
+figcap <- function(caption,
+                   chunklabel=knitr::opts_current$get("label"),
+                   context=getcontext()) {
+
+        switch(context,
+               latex = paste0("\\label{fig:", chunklabel, "}",
+                              caption),
+               html = paste0("<div id=fig:", chunklabel, ">",
+                             caption, "</div>"),
+               other = caption )
+}
+
+
+knitr::opts_chunk$set(echo = TRUE, fig.pos = "H", fig.width = 3, fig.asp=0.75, fig.align = "center", fig.cap = figcap(" ")) 
 ```
 
 
 ```{r firstcode}
 
-ref <- {
+
+
+# From Hadley's ggplot2 book:  Knowing conversion target 
+is_latex <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "latex")
+}
+
+# html same
+is_html <- function() {
+        identical(knitr::opts_knit$get("rmarkdown.pandoc.to"), "html")
+}
+
+pdfoutput <- is_latex() # tells if we are converting through latex, ie to pdf
+
+# getcontext returns the doc conversion context
+getcontext <- function(){
+        if (is_latex()) {"latex" 
+                   } else if (is_html()) {
+                           "html"
+                   } else {"other"} 
+}
+
+
+# get the code chunk name (for captionning)
+
+chunkname <- function() {knitr::opts_current$get("label")}
+
+
+# captions
+
+tabcap <- function(caption,
+                   chunklabel=knitr::opts_current$get("label"),
+                   context=getcontext()) {
+
+        switch(context,
+               latex = paste0("\\label{tab:", chunklabel, "}",
+                              caption),
+               html = paste0("<div id=tab:", chunklabel, ">",
+                             caption, "</div>"),
+               other = caption )
+}
+
+figcap <- function(caption,
+                   chunklabel=knitr::opts_current$get("label"),
+                   context=getcontext()) {
+
+        switch(context,
+               latex = paste0("\\label{fig:", chunklabel, "}",
+                              caption),
+               html = paste0("<div id=fig:", chunklabel, ">",
+                             caption, "</div>"),
+               other = caption )
+}
+
+# reference
+
+ref <- local({
   function(label) {
     sprintf('[%s](#%s)', label, label )
   }  
-}
+})
+
+
+
 
 ```
+
+# Intro {#intro}
+Just a test 
+
+
+# reference before txt {#refbefore}
+
+Ok. Now let us refer: before creation
+
+* plot : `r ref("fig:mtplot")`
+* table: `r ref("tab:headchunk")`
+* table: `r ref("tab:sumdchunk")`
+* headers:  `r ref("intro")` , `r ref("refbefore")` , `r ref("creation")`, `r ref("refafter")`
+
+
+
+
+# creation of material {#creation} 
 
 
 define a plot
@@ -36,18 +148,31 @@ summary(mtcars[, 1:5])
 
 ```
 
-```{r, fig.cap="this is plot mtcars 1"}
+```{r mtplot, fig.cap=figcap("this is plot mtcars 1")}
+# rem : , fig.cap=figcap("this is plot mtcars 1")
 ggplot(mtcars, aes(hp, mpg)) + geom_point()
 ```
 
 now prnt a table
 
 ```{r headchunk}
-
-kable(head(mtcars[, 1:4]), caption = "this is the head of mtcars")
+kable(head(mtcars[, 1:4]), caption = tabcap("this is the head of mtcars"))
 ```
 
 
-How is tht ??
+How is that ??
 
 
+```{r sumchunk}
+kable(summary(mtcars[, 1:4]), caption = tabcap("this is the summary of mtcars"))
+```
+
+
+# reference after creation {#refafter}
+
+Ok. Now let us refer: after creation
+
+* plot : `r ref("fig:mtplot")`
+* table: `r ref("tab:headchunk")`
+* table: `r ref("tab:sumdchunk")`
+* headers:  `r ref("intro")` , `r ref("refbefore")` , `r ref("creation")`, `r ref("refafter")`
