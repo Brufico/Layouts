@@ -121,12 +121,12 @@ fig <- local({
 # seclabel must be here sec:id
 secref <- local({ # local not useful ?
         function(seclabel, addlinkname = TRUE) {
-                sprintf('[%s](#%s)', 
-                        ifelse(addlinkname, 
+                sprintf('[%s](#%s)',
+                        ifelse(addlinkname,
                                paste0("Section ", seclabel),
                                "Section ")
                         , seclabel )
-        }  
+        }
 })
 
 

@@ -1,18 +1,23 @@
 ---
-title: "Cross refs, captions + figures with Latex/Pdf documents"
-subtitles: Experiments with inline LaTex.
+title: "Cross refs, captions + figures with HTML and Latex/Pdf documents"
+subtitles: Experiments with LaTex-HTML crossreferencing.
 author: "Bruno Fischer Colonimos"
-date: "11 juillet 2017"
+date: "16 juillet 2017"
 include_graphics: yes
 linkcolor: red
 lof: yes
 lot: yes
-# include-before: "\\newcommand*{\\secref}[1]{Section~\\ref{#1}}" # not necessary
-header-includes: "\\usepackage{float}" 
+header-includes: "\\usepackage{float}" # for LaTex 
 output: 
   pdf_document:
     fig_caption: yes
-    keep_tex: no
+    keep_tex: yes
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
+  html_document:
+    fig_caption: yes
+    keep_md: yes
     number_sections: yes
     toc: yes
     toc_depth: 3
@@ -21,13 +26,13 @@ output:
 
 ****************
  \ 
- \ 
  
 ```{r prelim, echo = FALSE}
 
 # general params
 # ============================
 
+# enable/disable manual page breaks
 activate_manual_pb <- TRUE
 
 
@@ -112,46 +117,48 @@ getchunkname <- function() {knitr::opts_current$get("label")}
 
 xr <- local({
         i <- 0
-        ref <- list(default="?xr?")
+        ref <- list(default = "?xr?") # initializes ref = the reference list in HTML
         list(
-                cap <- function(prefix, id, text = "", 
-                                center=FALSE, col="black", 
-                                inline=FALSE,
-                                context = getcontext()) {
+                cap = function(prefix, id = getchunkname(), 
+                               text = "", 
+                               center=FALSE, col="black", 
+                               inline=FALSE,
+                               context = getcontext()) {
                         refName <- paste(prefix, id, sep = ":")
                         switch(context,
                                latex = paste0("\\label{", refName, "}",text),
                                html = { # sprintf('<a name="%s"></a>%s', refName, text )
                                        cap.html(refName = refName, text = text, 
-                                                center, col, inline)
-                                       },
+                                                center=center, col=col, inline=inline)
+                               },
                                other = text)
-                }
+                },
                 
                 # auxiliary function: prepares one (partial) reference: 
                 # main ref or pageref
-                ref1 <- function(prefix, id, page = FALSE, context =getcontext()){
+                ref1 = function(prefix, id, page = FALSE, context =getcontext()){
                         refName <- paste(prefix, id, sep = ":")
                         switch(context,
                                latex = {lcommand <- ifelse(page,"pageref","ref")
-                               retval <- paste0("\\", lcommand,"{", refName, "}")},
+                                        toprint <- paste0("\\", lcommand,"{", refName, "}")},
                                html = if (prefix == "fig") { # ref1 only for figures
-                                       paste0("<a href=\"#", 
+                                       toprint <-paste0("<a href=\"#", 
                                               refName, "\">", ref[[refName]], "</a>")
                                }else{
                                        warning("No reference yet for non-figure objects")
-                                       "No reference yet for non-figure objects"
+                                       toprint <-"No reference yet for non-figure objects"
                                } , 
                                other = {
-                                       warning("Reference attempt to unsupported object")
-                                       ""
+                                       warning("!!Ref attempt to unsupported object!!")
+                                       toprint <- "!!Ref attempt to unsupported object!!"
                                })
-                }
+                        toprint # return value
+                },
                 
                 # reference function: main ref [+ pageref]
-                refs <- function(prefix, id, 
-                                 withpage = FALSE, capital = FALSE, 
-                                 context =getcontext()){
+                refs = function(prefix, id, 
+                                withpage = FALSE, capital = FALSE, 
+                                context =getcontext()){
                         refName <- paste(prefix, id, sep = ":")
                         typeref <- switch(prefix,
                                           fig = if (capital) {"Figure"} else {"figure"} ,
@@ -162,32 +169,38 @@ xr <- local({
                         switch(context,
                                latex = {
                                        main <- paste(typeref, 
-                                                     ref1(prefix, id, 
-                                                          page = FALSE), sep = " ")
-                                       result <- if (withpage) {
-                                               paste(main , ", page", 
-                                                     ref1(prefix, id, page = TRUE))
-                                       } else {main}
+                                                     xr$ref1(prefix, id,  
+                                                          page = FALSE, 
+                                                          context = context),
+                                                     sep = " ")
+                                       result <- ifelse(withpage, 
+                                                        paste0(main , ", ", "page ", 
+                                                               xr$ref1(prefix, 
+                                                                       id, 
+                                                                       page = TRUE,
+                                                             context = context)),
+                                                        main)
                                },
                                html = {
-                                       if (prefix=="fig") {
-                                               paste(typeref, 
-                                                     ref1(prefix, id, page = FALSE),
+                                       if (prefix == "fig") {
+                                               result <- paste(typeref, 
+                                                     xr$ref1(prefix, id, page = FALSE),
                                                      sep = " ")
                                        } else {# make a link
-                                               sprintf('[%s %s](#%s)', 
+                                               result <- sprintf('[%s %s](#%s)', 
                                                        typeref, refName, refName )
                                        }
                                },
-                               other = sprintf('[%s %s](#%s)', 
+                               other = result <- sprintf('[%s %s](#%s)', 
                                                typeref, refName, refName ) )
-                }
+                result #return value
+                },
                 
                 # Functions for HTML
                 # ==================
                 
-                cap.html <- function(refName, text, 
-                                     center=FALSE, col="black", inline=FALSE) {
+                cap.html = function(refName, text, 
+                                    center=FALSE, col="black", inline=FALSE) {
                         i <<- i + 1
                         ref[[refName]] <<- i
                         css_ctr <- ""
@@ -213,8 +226,10 @@ xr <- local({
                 },
                 
                 
-                # return all figure references
-                ref_all <- function(){ ref } ## For debugging
+                # return all figure references for debugging
+                ref_all <- function(){ 
+                        ref
+                }, 
                 
                 
                 # pre-retrieving captions:
@@ -229,34 +244,27 @@ xr <- local({
                 # through the document now will allow us to
                 # create cross references before the
                 # captions actually appears.
-                read_fig_cap <- function( 
+                read_fig_cap = function( 
                         rmdFn = knitr::current_input(),  # filename of input document
                         context=getcontext() ){
                         if (context != "latex") {
-                                
                                 ## Read lines in doc and close connection
                                 rmdCon <- file(rmdFn, open = "r")
                                 rmdLines <- readLines(rmdCon)
                                 close(rmdCon)
                                 
-                                #Pull out all occurences of
-                                #at least one back tick,
-                                #followed # by any number of
-                                #characters, followed by
-                                #fig$cap (all on one line)
+                                # Pull out all occurences of at least one back tick,
+                                # followed by any number of characters, followed by
+                                # fig$cap (all on one line)
                                 figscap_idx <- grep("`+(.*)fig\\$cap", rmdLines) 
-                                # returns the indices of the
-                                # lines that match the
-                                # pattern
-                                # keep only matching lines
+                                # returns the indices of the lines that match the
+                                # pattern.
+                                # Keep only matching lines
                                 rmdLines <- rmdLines[figscap_idx] 
                                 
-                                #Get rid of everything up
-                                #until the start of the
-                                #caption label # This
-                                #presumes the caption label
-                                #is the first argument of
-                                #fig$cap() # E.g., fig.cap =
+                                #Get rid of everything up until the start of the
+                                #caption label. This presumes the caption label
+                                #is the first argument of fig$cap() # E.g., fig.cap =
                                 #fig$cap("my_label", ...)
                                 rmdLinesSansPre <- 
                                         sub("(.*)fig\\$cap(.*?)[\"']", "", rmdLines)
@@ -264,17 +272,14 @@ xr <- local({
                                 ## Identify everything up until the first quote
                                 match_data <- regexpr("(.*?)[\"']", rmdLinesSansPre)
                                 
-                                # Reduce the length by one,
-                                # because we're not
-                                # interested in the final
-                                # quote
+                                # Reduce the length by one,because we're not
+                                # interested in the final quote
                                 attr(match_data, "match.length") <- 
                                         attr(match_data, "match.length") - 1
                                 
                                 ## Extract the labels
                                 fig_labels <- 
-                                        regmatches(rmdLinesSansPre, 
-                                                   match_data, invert=FALSE)
+                                        regmatches(rmdLinesSansPre, match_data, invert=FALSE)
                                 
                                 if (length(fig_labels) > 0) {
                                         
@@ -288,10 +293,11 @@ xr <- local({
                                         
                                 }
                         }
-                        
+                } # end function read_fig_cap
+                
         ) # end list
         
-                } ) # end local
+} ) # end local
 
 
 
@@ -324,8 +330,8 @@ string
 
 
 
-
-pagebreak <- function(string = "", active = FALSE, context = getcontext()){
+# manual pagebreak
+pagebreak <- function(string = "", active = activate_manual_pb, context = getcontext()){
         if (active) {
                 switch(context,
                        html = paste0("",string, ""),
@@ -351,13 +357,11 @@ library(xtable)
 ```
 
 
-# Objective {#obj}
+# Objective {#sec:obj}
 
-Find hard-coded ways to cross-refs. 
-Here all is in Latex
+Try the cross-referencing functions in LaTex and HTML
 
-
-# Conclusions {#conclusions}
+# Conclusions {#sec:conclusions}
 
 * We must use captions. BUT, whenever we have captions, figures and tables will "float" on the pages, and it may be difficult to understand where.
     * for figures, 
@@ -395,12 +399,12 @@ Here all is in Latex
     * example: see section "[Referencing again after the creation](#refagain)", (link not-so-neccessary here, as we get it right now, but it also work when sections are not numbered) , i.e. section \ref{refagain}, beginning page \pageref{refagain}.
 
 
-# Including / referencing  Plots and table examples {#plottables}
+# Including / referencing  Plots and table examples {#sec:plottables}
 
 You can embed and reference plots, tables and sections, plus arbitrary loci in the text.
 
 
-## Referencing elements produced later in the document {#refbefore}
+## Referencing elements produced later in the document {#sec:refbefore}
 
 Let us reference them before we create them: for example:
 
@@ -442,12 +446,13 @@ Let us reference them before we create them: for example:
     * try again: with section header `create`: section \ref{create}, page \pageref{create}
 
 
-## Creating Plots and tables {#create}
+## Creating Plots and tables {#sec:create}
 
-\label{text:verse} 
-This label(`\label{text:verse}`) is in the text at the beginning of the section. It can be used in refs and points to the section. (not the verse) the reference would be section \ref{text:verse}, page \pageref{text:verse} 
+`r xr$cap(prefix="no", id = "verse")`
 
-`r pagebreak(active = activate_manual_pb )`
+This label(` (r) xr$cap(prefix="no", id = "verse")`) is in the text at the beginning of the section. It can be used in refs and points to the section. (not the verse) the reference would be programmatically `r xr$refs(prefix="no", id = "verse", withpage=TRUE)`. ==> manually sec: \ref{no:verse}, pg: \pageref{no:verse}. And without page ref (default prog) == `r xr$refs(prefix="no", id = "verse")`
+
+`r pagebreak()`
 
 |       Precise and Visual 
 |       ------------------:
@@ -464,29 +469,28 @@ This label(`\label{text:verse}`) is in the text at the beginning of the section.
 |
 |                          without 
 |                          a doubt
-Table: A "poem" (?) as a table with a label \label{tab:poem}
+Table: `r xr$cap("tab", "poem", 'A \"poem\" (?) as a table with a label' )`
 
 Remark: with every the table,  the table index is increased by 1, even without caption
 
-The above table is manually set up and had been assigned a label (tab:poem) the label can be referred to by table \ref{tab:poem}, page \pageref{tab:poem} 
-- ref is ok, but pageref is not: it just shows here the section number as well.
+The above table is manually set up and had been assigned a label (tab:poem) the label can be referred to by `r xr$refs("tab", "poem", withpage = TRUE)`
+- ref is ok, and pageref as well.
 
 
-### Two tables and more plots {#twotab}
+### Two tables and more plots {#sec:twotab}
 
-With this first chunk, we produce table \ref{firsttbchunk} (firsttbchunk is the chunk name), but no luck? appending tab: \ref{tab:firsttbchunk} does'nt work and there is no label set in the tex file. How the hell does the system know this plot in the list of pictures ?
-
+With this first chunk, we produce table `r xr$refs(prefix="tab", id="firsttbchunk")`, then in the next `r xr$refs(prefix="tab", id="firsttb2chunk")`, and then  `r xr$refs(prefix="fig", id="firstchunk")`, which is on page `r xr$ref1(prefix="fig", id="firstchunk", page=TRUE)`
 
 ```{r firsttbchunk}
 data("ToothGrowth")
-kable(head(ToothGrowth), caption = "hehe")
+kable(head(ToothGrowth), caption = xr$cap(prefix="tab", text = "hehe"))
 ```
 
 ```{r firsttb2chunk}
-pander(head(faithful), caption = "hoho")
+pander(head(faithful), caption = xr$cap(prefix="tab", text = "hoho"))
 ```
 
-```{r firstchunk}
+```{r firstchunk, fig.cap = "first plot"}
 ggplot(ToothGrowth, aes(dose,len, color=supp))+ geom_jitter()
 ```
 
@@ -571,7 +575,7 @@ print(kable(list(summary(cars),summary(ToothGrowth)),
 
 
 
-## Referencing again after the creation: {#refagain}
+## Referencing again after the creation: {#sec:refagain}
 
 
 * We first have 
@@ -612,7 +616,7 @@ print(kable(list(summary(cars),summary(ToothGrowth)),
     * try again: with section header `create`: section \ref{create}, page \pageref{create}
 
 
-# The end {#end}
+# Finally {#sec:end}
 
 And some text to finish: \
 `r centertext( "Goodbye", decoration = "*")`

@@ -4,6 +4,32 @@ author: Bruno Fischer Colonimos
 date: 15/07/2017
 ---
 
+# as of now : 16/07/2017
+
+## file versions
+
+* A2_testcross3_Latex.Rmd ==> A2_testcross3B.Rmd ==> A2_testcross3C.Rmd
+
+crossrefs fonctions réécrites, mais cul-de-sac pour HTML. :
+- par rapport à la situation d'Andy Lyons, on ne peut plus localiser les créations de
+graphes en recherchant la fonction de captionning, même plus dans les options de chunks.
+==> beaucoup plus dur.
+
+une idée serait de générer un pdf, et de parser
+a) la table des matières
+b) la liste des figures
+c) la liste des tableaux
+
+Trop de travail.
+
+Décision: revenir sur de simples liens dans tous les cas en HTML, dans les versions futures.
+
+prochaine version du fichier: B0_testcross.Rmd
+
+
+
+
+
 # as of now : 15/07/2017
 
 ## important files:
@@ -11,7 +37,7 @@ date: 15/07/2017
 * A2_Exp_figures_crossrefs 10.Rmd : contains
     * definitions for figure sizes
     * some functions for accessing context: chunk names, options, & captioning / control of flotation
-* A2_Exp_testcross3_Latex.Rmd : contains
+* A2_testcross3_Latex.Rmd : contains
     * many exeriments for cross-referencing things in LaTex (from Markdown)
 * A2_HTML_Crossrefs_Lyons.Rmd : contains
     * The code of Andy Lyons for cross-referencing figures in HTML more or less heavily modified.

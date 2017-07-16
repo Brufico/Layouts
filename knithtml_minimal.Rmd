@@ -1,0 +1,53 @@
+---
+title: "minimal file for HTML"
+author: BFC
+Date: "16/07/17"
+output:
+  html_document:
+    fig_cap: yes
+    keep_md: yes
+---
+
+
+```{r setup}
+library(pander)
+library(knitr)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE, fig.pos = "H") 
+```
+
+
+```{r firstcode}
+
+ref <- {
+  function(label) {
+    sprintf('[%s](#%s)', label, label )
+  }  
+}
+
+```
+
+
+define a plot
+```{r firstchk}
+data("mtcars")
+colnames(mtcars)
+summary(mtcars[, 1:5])
+
+```
+
+```{r, fig.cap="this is plot mtcars 1"}
+ggplot(mtcars, aes(hp, mpg)) + geom_point()
+```
+
+now prnt a table
+
+```{r headchunk}
+
+kable(head(mtcars[, 1:4]), caption = "this is the head of mtcars")
+```
+
+
+How is tht ??
+
+
