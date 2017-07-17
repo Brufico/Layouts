@@ -1,5 +1,5 @@
 ---
-title: "minimal file for HTML"
+title: "minimal file for HTML crossref (links only)"
 author: BFC
 Date: "16/07/17"
 lof: yes
@@ -48,7 +48,7 @@ figcap <- function(caption,
 }
 
 
-knitr::opts_chunk$set(echo = TRUE, fig.pos = "H", fig.width = 3, fig.asp=0.75, fig.align = "center", fig.cap = figcap(" ")) 
+knitr::opts_chunk$set(echo = TRUE, fig.pos = "H", fig.width = 3, fig.asp=0.75, fig.align = "center", fig.cap = quote(figcap(" "))) 
 ```
 
 
@@ -110,9 +110,9 @@ figcap <- function(caption,
 
 # reference
 
-ref <- local({
-  function(label) {
-    sprintf('[%s](#%s)', label, label )
+href <- local({
+  function(label, text = label) {
+    sprintf('[%s](#%s)', text, label )
   }  
 })
 
@@ -129,10 +129,12 @@ Just a test
 
 Ok. Now let us refer: before creation
 
-* plot : `r ref("fig:mtplot")`
-* table: `r ref("tab:headchunk")`
-* table: `r ref("tab:sumdchunk")`
-* headers:  `r ref("intro")` , `r ref("refbefore")` , `r ref("creation")`, `r ref("refafter")`
+* plot : `r href("fig:mtplot")`
+* plot : `r href("fig:mtplot2")`
+* plot : `r href("fig:mtplot3")`
+* table: `r href("tab:headchunk")`
+* table: `r href("tab:sumdchunk")`
+* headers:  `r href("intro")` , `r href("refbefore")` , `r href("creation")`, `r href("refafter")`
 
 
 
@@ -167,12 +169,23 @@ How is that ??
 kable(summary(mtcars[, 1:4]), caption = tabcap("this is the summary of mtcars"))
 ```
 
+And two other plot
+```{r, mtplot2}
+ggplot(mtcars, aes(wt, disp, color=factor(cyl))) + geom_point()
+```
+
+
+```{r, mtplot3, fig.cap=figcap("dummy caption (just a space would do)")}
+ggplot(mtcars, aes(wt, hp, color=factor(am))) + geom_point()
+```
 
 # reference after creation {#refafter}
 
 Ok. Now let us refer: after creation
 
-* plot : `r ref("fig:mtplot")`
-* table: `r ref("tab:headchunk")`
-* table: `r ref("tab:sumdchunk")`
-* headers:  `r ref("intro")` , `r ref("refbefore")` , `r ref("creation")`, `r ref("refafter")`
+* plot : `r href("fig:mtplot")`
+* plot : `r href("fig:mtplot2")`
+* plot : `r href("fig:mtplot3")`
+* table: `r href("tab:headchunk")`
+* table: `r href("tab:sumdchunk")`
+* headers:  `r href("intro")` , `r href("refbefore")` , `r href("creation")`, `r href("refafter")`

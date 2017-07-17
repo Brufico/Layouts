@@ -24,7 +24,11 @@ Trop de travail.
 
 Décision: revenir sur de simples liens dans tous les cas en HTML, dans les versions futures.
 
-prochaine version du fichier: B0_testcross.Rmd
+OU BIEN: générer au fil de l'eau une table des figures (et une table des tableaux) et la (les) sauvegarder en fin de document. A la prochaine compilation, vérifier la présence du ficher et , s'il existe, en tirer les paramètre de référence (n0 de figure + etiquette correspondante.) Pas mal.
+
+
+tests HTML dans knithtml_minimal.Rmd
+prochaine version du fichier principal: B0_testcross.Rmd
 
 
 
